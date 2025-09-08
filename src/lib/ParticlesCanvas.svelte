@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import App from '../scripts/App.js'
+  import App from './scripts/App.js'
 
   export let imageSrc = '/images/source.png'
   export let params = {}             // e.g. { pixelStep: 2, uSize: 2.0 }

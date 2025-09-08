@@ -1,7 +1,15 @@
+// vite.config.js
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import glsl from 'vite-plugin-glsl';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()]
+  plugins: [
+    tailwindcss(),
+    sveltekit(),
+    glsl({
+      include: ['**/*.vert', '**/*.frag', '**/*.glsl'], // compile to strings
+    })
+  ]
 });
