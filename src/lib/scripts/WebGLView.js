@@ -1,4 +1,4 @@
-// src/scripts/webgl/WebGLView.js
+// src/scripts/WebGLView.js
 import * as THREE from 'three'
 import InteractiveControls from './InteractiveControls.js'
 import Particles from './Particles.js'

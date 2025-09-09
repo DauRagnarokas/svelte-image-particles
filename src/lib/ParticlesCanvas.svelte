@@ -1,7 +1,7 @@
 <!-- src/lib/ParticlesCanvas.svelte -->
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import WebGLView from './scripts/webgl/WebGLView.js'
+  import WebGLView from './scripts/WebGLView.js'
 
   export let imageSrc = '/images/source.png'
   export let params = {}

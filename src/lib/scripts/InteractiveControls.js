@@ -1,4 +1,4 @@
-// src/scripts/webgl/controls/InteractiveControls.js
+// src/scripts/InteractiveControls.js
 // Uses eventemitter3 for reliability; no browser-detect needed.
 // Pointer Events handle mouse/touch/pen uniformly.
 
