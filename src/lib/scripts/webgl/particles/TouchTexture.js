@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
-import { easeOutQuad, easeInOutQuad, easeOutSine, easeInOutSine } from '../../utils/easing.utils';
+const easeOutSine = (t, b, c, d) => {
+	return c * Math.sin(t/d * (Math.PI/2)) + b;
+};
 
 export default class TouchTexture {
 	constructor(parent) {
