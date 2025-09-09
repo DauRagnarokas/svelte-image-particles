@@ -1,36 +1,57 @@
+<!-- src/lib/ParticlesCanvas.svelte -->
 <script>
   import { onMount, onDestroy } from 'svelte'
-  import App from './scripts/App.js'
+  import WebGLView from './scripts/webgl/WebGLView.js'
 
   export let imageSrc = '/images/source.png'
-  export let params = {}             // e.g. { pixelStep: 2, uSize: 2.0 }
-  export let width = '100%'          // instance size is controlled by parent
+  export let params = {}
+  export let width = '100%'
   export let height = '100%'
 
-  let app
+  let webgl
   let containerEl
+  let frame
+
+  function loop() {
+    if (!webgl) return
+    webgl.update()
+    webgl.draw()
+    frame = requestAnimationFrame(loop)
+  }
 
   onMount(() => {
-    // Pass a unique container so multiple instances don’t clash
-    app = new App(imageSrc, { container: containerEl })
-    app.init()
+    webgl = new WebGLView({ container: containerEl }, imageSrc)
 
-    if (params && Object.keys(params).length) {
-      app.setParams?.(params)
+    // append canvas manually
+    if (webgl?.renderer?.domElement) {
+      containerEl.appendChild(webgl.renderer.domElement)
     }
+
+    webgl.resize()
+    webgl.particles?.setParams?.(params)
+
+    loop()
+    window.addEventListener('resize', webgl.resize.bind(webgl))
   })
 
-  // live param updates
-  $: app && params && app.setParams?.(params)
+  $: webgl && params && webgl.particles?.setParams?.(params)
 
   onDestroy(() => {
-    app?.dispose?.()
-    app = null
+    cancelAnimationFrame(frame)
+    window.removeEventListener('resize', webgl.resize?.bind(webgl))
+    webgl?.renderer?.dispose?.()
+    webgl = null
   })
 </script>
 
-<div class="spc-container" bind:this={containerEl} style="width:{width}; height:{height}; position:relative;"></div>
+<div
+  class="spc-container"
+  bind:this={containerEl}
+  style="width:{width}; height:{height}; position:relative;"
+></div>
 
 <style>
-  .spc-container { overflow: hidden; }
+  .spc-container {
+    overflow: hidden;
+  }
 </style>
