@@ -1,3 +1,5 @@
+// src/lib/ParticlesCanvas.svelte
+
 import * as THREE from 'three'
 import TouchTexture from './TouchTexture'
 import vert from '../../../shaders/particle.vert?raw'

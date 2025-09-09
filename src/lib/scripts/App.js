@@ -25,6 +25,7 @@ export default class App {
   }
 
   initWebGL() {
+    // Create WebGL view but DO NOT append canvas here
     this.webgl = new WebGLView(this, this.imageSrc)
 
     const mountTarget =
@@ -36,9 +37,9 @@ export default class App {
     if (!this.canvas) throw new Error('renderer.domElement missing')
 
     this.mountTarget = mountTarget
-    mountTarget.appendChild(this.canvas)
+    mountTarget.appendChild(this.canvas) // 🔥 Single source of truth: only App does append
 
-    // if your WebGLView doesn’t auto-init particles, this is safe:
+    // initialize particles if not already done
     try {
       if (this.webgl?.particles?.init && !this.webgl.particles.points) {
         this.webgl.particles.init(this.imageSrc)
@@ -71,11 +72,8 @@ export default class App {
   draw()   { this.webgl?.draw?.()   }
 
   // ---- sizing ----
-  // Use window sizing (keeps behavior identical to your original demo).
-  // This was the “working” state before the container-based resize change.
   resize() {
     if (!this.webgl) return
-    // Call your original view’s resize (it reads window size internally)
     this.webgl.resize?.()
     this.webgl?.interactive?.resize?.()
   }

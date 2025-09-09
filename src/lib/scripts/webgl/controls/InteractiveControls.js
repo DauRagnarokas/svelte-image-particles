@@ -86,6 +86,14 @@ export default class InteractiveControls extends EventEmitter {
   }
 
   onMove(e) {
+    // 🔥 Always refresh rect so scroll/layout shifts are accounted for
+    if (this.el && this.el !== window) {
+      const r = this.el.getBoundingClientRect()
+      this.rect = { x: r.left, y: r.top, width: r.width, height: r.height }
+    } else {
+      this.rect = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight }
+    }
+
     const cx = e.clientX
     const cy = e.clientY
 
@@ -104,14 +112,6 @@ export default class InteractiveControls extends EventEmitter {
     this.pointer.y = this.mouse.y
 
     this.raycaster.setFromCamera(this.mouse, this.camera)
-
-    // If dragging behavior is desired, re-enable this block:
-    // if (this.selected && this.isDown) {
-    //   if (this.raycaster.ray.intersectPlane(this.plane, this.intersection)) {
-    //     this.emit('interactive-drag', { object: this.selected, position: this.intersection.sub(this.offset) })
-    //   }
-    //   return
-    // }
 
     const intersects = this.raycaster.intersectObjects(this.objects, false)
 
