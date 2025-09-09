@@ -1,7 +1,7 @@
 // src/scripts/webgl/WebGLView.js
 import * as THREE from 'three'
-import InteractiveControls from './controls/InteractiveControls'
-import Particles from './particles/Particles'
+import InteractiveControls from './InteractiveControls.js'
+import Particles from './Particles.js'
 
 export default class WebGLView {
   constructor(app, imageSrc = '/images/source.png') {

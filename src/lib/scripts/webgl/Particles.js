@@ -1,9 +1,9 @@
 // src/lib/ParticlesCanvas.svelte
 
 import * as THREE from 'three'
-import TouchTexture from './TouchTexture'
-import vert from '../../../shaders/particle.vert?raw'
-import frag from '../../../shaders/particle.frag?raw'
+import TouchTexture from './TouchTexture.js'
+import vert from '../../shaders/particle.vert?raw'
+import frag from '../../shaders/particle.frag?raw'
 
 // ---- single source of truth for all numbers ----
 export const PARTICLE_PARAMS = {

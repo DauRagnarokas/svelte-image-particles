@@ -16,5 +16,5 @@ export default class WebGLView {
     resize(): void;
     fovHeight: number;
 }
-import InteractiveControls from './controls/InteractiveControls';
-import Particles from './particles/Particles';
+import InteractiveControls from './InteractiveControls';
+import Particles from './Particles';
