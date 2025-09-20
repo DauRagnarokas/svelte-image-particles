@@ -49,9 +49,3 @@
   bind:this={containerEl}
   style="width:{width}; height:{height}; position:relative;"
 ></div>
-
-<style>
-  .spc-container {
-    overflow: hidden;
-  }
-</style>
