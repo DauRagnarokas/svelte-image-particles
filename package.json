@@ -30,7 +30,7 @@
   },
   "peerDependencies": {
     "svelte": "^5.0.0",
-    "three": "^0.168.0",
+    "three": "^0.178.0",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
