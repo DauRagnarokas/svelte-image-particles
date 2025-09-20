@@ -1,58 +1,92 @@
-# Svelte library
+svelte-image-particles
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+✨ A Svelte component for rendering interactive particle systems from images, powered by Three.js
+ and GLSL shaders.
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+🚀 Features
 
-## Creating a project
+Render images as particle fields
 
-If you're seeing this, you've probably already done this step. Congrats!
+Smooth interactive motion
 
-```sh
-# create a new project in the current directory
-npx sv create
+Built with Svelte 5 + Three.js
 
-# create a new project in my-app
-npx sv create my-app
-```
+Customizable shaders for advanced effects
 
-## Developing
+📦 Installation
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+You can install directly from GitHub (no npm publish required):
 
-```sh
-npm run dev
+pnpm add github:DauRagnarokas/svelte-image-particles#main
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+For stable releases, use a tagged version instead of #main:
 
-## Building
+pnpm add github:DauRagnarokas/svelte-image-particles#v0.0.1
 
-To build your library:
+🛠 Consumer Setup
 
-```sh
-npm pack
-```
+Because this library uses GLSL shaders (.vert / .frag files), you need to configure Vite to handle them.
 
-To create a production version of your showcase app:
+Option 1 — Minimal (recommended)
 
-```sh
-npm run build
-```
+Add this to your vite.config.ts:
 
-You can preview the production build with `npm run preview`.
+export default defineConfig({
+  assetsInclude: ['**/*.frag', '**/*.vert'],
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.vert': 'text',
+        '.frag': 'text'
+      }
+    }
+  }
+});
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Option 2 — With plugin (alternative)
 
-## Publishing
+Install vite-plugin-glsl
+:
 
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
+pnpm add -D vite-plugin-glsl
 
-To publish your library to [npm](https://www.npmjs.com):
 
-```sh
-npm publish
-```
+And in vite.config.ts:
+
+import glsl from 'vite-plugin-glsl';
+
+export default defineConfig({
+  plugins: [glsl()]
+});
+
+🎨 Usage
+
+In your Svelte component:
+
+<script>
+  import { ParticlesCanvas } from 'svelte-image-particles';
+</script>
+
+<section class="relative h-screen bg-black">
+  <!-- Pass your image as a prop -->
+  <ParticlesCanvas image="/images/logo.png" />
+</section>
+
+⚙️ Props
+Prop	Type	Default	Description
+image	string	null	Path/URL to the image to convert to particles
+width	number	auto	Canvas width
+height	number	auto	Canvas height
+
+(More props will be added as customization grows — e.g., particle size, density, interactivity strength.)
+
+📂 Project Structure
+src/lib
+ ├── ParticlesCanvas.svelte   # main exported component
+ ├── scripts/                 # JS helpers
+ └── shaders/                 # GLSL shaders (.vert / .frag)
+
+📜 License
+
+MIT © DauRagnarokas
