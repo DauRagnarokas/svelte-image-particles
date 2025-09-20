@@ -22,8 +22,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "npm run prepack",
-    "preview": "vite preview",
-    "prepare": "svelte-kit sync || echo ''",
+    "prepare": "npm run prepack",
     "prepack": "svelte-kit sync && svelte-package && cpy 'src/lib/{scripts,shaders}/**/*' dist/",
     "package": "svelte-package",
     "format": "prettier --write .",
