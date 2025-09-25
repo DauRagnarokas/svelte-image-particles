@@ -1,47 +1,54 @@
-<!-- src/lib/ParticlesCanvas.svelte -->
-<script>
-  import { onMount, onDestroy } from 'svelte'
-  import WebGLView from './scripts/WebGLView.js'
+<script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
+  import WebGLView from './scripts/WebGLView.js';
 
-  export let imageSrc = '/images/source.png'
-  export let params = {}
-  export let width = '100%'
-  export let height = '100%'
+  export let imageSrc = '/images/source.png';
+  export let params: any = {};
+  export let width = '100%';
+  export let height = '100%';
 
-  let webgl
-  let containerEl
-  let frame
+  let webgl: any;
+  let containerEl: HTMLDivElement;
+  let frame: number;
+
+  function isBrowser() {
+    return typeof window !== 'undefined' && typeof document !== 'undefined';
+  }
 
   function loop() {
-    if (!webgl) return
-    webgl.update()
-    webgl.draw()
-    frame = requestAnimationFrame(loop)
+    if (!isBrowser() || !webgl) return;
+    webgl.update();
+    webgl.draw();
+    frame = requestAnimationFrame(loop);
   }
 
   onMount(() => {
-    webgl = new WebGLView({ container: containerEl }, imageSrc)
+    if (!isBrowser()) return;
 
-    // append canvas manually
+    webgl = new WebGLView({ container: containerEl }, imageSrc);
+
     if (webgl?.renderer?.domElement) {
-      containerEl.appendChild(webgl.renderer.domElement)
+      containerEl.appendChild(webgl.renderer.domElement);
     }
 
-    webgl.resize()
-    webgl.particles?.setParams?.(params)
+    webgl.resize();
+    webgl.particles?.setParams?.(params);
 
-    loop()
-    window.addEventListener('resize', webgl.resize.bind(webgl))
-  })
+    loop();
+    window.addEventListener('resize', webgl.resize.bind(webgl));
+  });
 
-  $: webgl && params && webgl.particles?.setParams?.(params)
+  $: if (isBrowser() && webgl && params) {
+    webgl.particles?.setParams?.(params);
+  }
 
   onDestroy(() => {
-    cancelAnimationFrame(frame)
-    window.removeEventListener('resize', webgl.resize?.bind(webgl))
-    webgl?.renderer?.dispose?.()
-    webgl = null
-  })
+    if (!isBrowser()) return;
+    if (frame) cancelAnimationFrame(frame);
+    window.removeEventListener('resize', webgl.resize?.bind(webgl));
+    webgl?.renderer?.dispose?.();
+    webgl = null;
+  });
 </script>
 
 <div
