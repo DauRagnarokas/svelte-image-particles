@@ -10,6 +10,7 @@
   let webgl: any;
   let containerEl: HTMLDivElement;
   let frame: number;
+  let handleResize: (() => void) | null = null;
 
   function isBrowser() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -35,7 +36,8 @@
     webgl.particles?.setParams?.(params);
 
     loop();
-    window.addEventListener('resize', webgl.resize.bind(webgl));
+    handleResize = () => webgl?.resize?.();
+    window.addEventListener('resize', handleResize);
   });
 
   $: if (isBrowser() && webgl && params) {
@@ -45,7 +47,11 @@
   onDestroy(() => {
     if (!isBrowser()) return;
     if (frame) cancelAnimationFrame(frame);
-    window.removeEventListener('resize', webgl.resize?.bind(webgl));
+    if (handleResize) window.removeEventListener('resize', handleResize);
+    handleResize = null;
+    if (webgl?.renderer?.domElement && containerEl) {
+      containerEl.removeChild(webgl.renderer.domElement);
+    }
     webgl?.renderer?.dispose?.();
     webgl = null;
   });
