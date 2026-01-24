@@ -89,4 +89,13 @@ export default class TouchTexture {
 		this.ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
 		this.ctx.fill();
 	}
+
+	dispose() {
+		if (this.texture) {
+			this.texture.dispose();
+			this.texture = null;
+		}
+		this.canvas = null;
+		this.ctx = null;
+	}
 }

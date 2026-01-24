@@ -4,9 +4,10 @@ import InteractiveControls from './InteractiveControls.js'
 import Particles from './Particles.js'
 
 export default class WebGLView {
-  constructor(app, imageSrc = '/images/source.png') {
+  constructor(app, imageSrc = '/images/source.png', options = {}) {
     this.app = app
     this.imageSrc = imageSrc
+    this.pixelRatio = options.pixelRatio
 
     this.initThree()
     this.initParticles()
@@ -27,7 +28,7 @@ export default class WebGLView {
       alpha: true,
       premultipliedAlpha: true,
     })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    this.setPixelRatio(this.pixelRatio)
     this.renderer.setClearColor(0x000000, 0.0)
 
     // 🔥 don’t append canvas here, App will handle it
@@ -37,6 +38,12 @@ export default class WebGLView {
     this.renderer.setSize(w, h)
 
     this.clock = new THREE.Clock(true)
+  }
+
+  setPixelRatio(value) {
+    const pr =
+      value == null ? Math.min(window.devicePixelRatio || 1, 2) : Math.max(0.5, Number(value))
+    if (this.renderer) this.renderer.setPixelRatio(pr)
   }
 
   initControls() {
@@ -75,5 +82,26 @@ export default class WebGLView {
 
     if (this.interactive) this.interactive.resize()
     if (this.particles) this.particles.resize()
+  }
+
+  dispose() {
+    if (this.interactive) this.interactive.disable()
+
+    if (this.particles) {
+      this.particles.destroy()
+      this.particles = null
+    }
+
+    if (this.scene) {
+      this.scene.clear()
+      this.scene = null
+    }
+
+    if (this.renderer) {
+      if (this.renderer.renderLists) this.renderer.renderLists.dispose()
+      this.renderer.dispose()
+      if (this.renderer.forceContextLoss) this.renderer.forceContextLoss()
+      this.renderer = null
+    }
   }
 }

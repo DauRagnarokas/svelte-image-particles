@@ -297,6 +297,7 @@ export default class Particles {
 
   destroy() {
     if (!this.object3D) return
+    this.removeListeners()
     this.object3D.parent.remove(this.object3D)
     this.object3D.geometry.dispose()
     this.object3D.material.dispose()
@@ -307,6 +308,16 @@ export default class Particles {
     this.hitArea.geometry.dispose()
     this.hitArea.material.dispose()
     this.hitArea = null
+
+    if (this.texture) {
+      this.texture.dispose()
+      this.texture = null
+    }
+
+    if (this.touch) {
+      this.touch.dispose?.()
+      this.touch = null
+    }
   }
 
   resize() {
