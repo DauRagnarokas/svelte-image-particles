@@ -39,6 +39,7 @@
   let frame: number;
   let handleResize: (() => void) | null = null;
   let handleVisibility: (() => void) | null = null;
+  let localPaused = false;
 
   function isBrowser() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -46,6 +47,7 @@
 
   function loop() {
     if (!isBrowser() || !webgl) return;
+    if (localPaused) return;
     webgl.update();
     webgl.draw();
     frame = requestAnimationFrame(loop);
@@ -81,10 +83,17 @@
     const nextPaused = Boolean(paused || hidden);
     if (persist) {
       shared.paused = nextPaused;
-      if (shared.paused) stopLoop();
-      else startLoop();
+      shared.webgl?.setPaused?.(shared.paused);
+      if (shared.paused) {
+        shared.running = false;
+        stopLoop();
+      } else {
+        startLoop();
+      }
     } else {
-      if (nextPaused) {
+      localPaused = nextPaused;
+      webgl?.setPaused?.(localPaused);
+      if (localPaused) {
         if (frame) cancelAnimationFrame(frame);
         frame = 0;
       } else if (webgl && !frame) {
@@ -147,7 +156,13 @@
   }
 
   $: if (isBrowser() && webgl) {
+    pixelRatio;
     applyPixelRatio();
+  }
+
+  $: if (isBrowser() && webgl) {
+    paused;
+    pauseOnHidden;
     updatePauseState();
   }
 

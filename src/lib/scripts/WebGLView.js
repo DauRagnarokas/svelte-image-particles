@@ -8,6 +8,7 @@ export default class WebGLView {
     this.app = app
     this.imageSrc = imageSrc
     this.pixelRatio = options.pixelRatio
+    this.paused = false
 
     this.initThree()
     this.initParticles()
@@ -46,6 +47,12 @@ export default class WebGLView {
     if (this.renderer) this.renderer.setPixelRatio(pr)
   }
 
+  setPaused(value) {
+    this.paused = Boolean(value)
+    if (this.paused && this.clock) this.clock.stop()
+    if (!this.paused && this.clock) this.clock.start()
+  }
+
   initControls() {
     this.interactive = new InteractiveControls(this.camera, this.renderer.domElement)
     this.interactive.resize()
@@ -57,11 +64,13 @@ export default class WebGLView {
   }
 
   update() {
+    if (this.paused) return
     const delta = this.clock.getDelta()
     if (this.particles) this.particles.update(delta)
   }
 
   draw() {
+    if (this.paused) return
     this.renderer.render(this.scene, this.camera)
   }
 

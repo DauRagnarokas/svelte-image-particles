@@ -1,6 +1,8 @@
 <script>
   import ParticlesCanvas from '$lib/ParticlesCanvas.svelte';
 
+  let paused = false;
+
   const params = {
     pixelStep: 2,
     maxParticles: 25000,
@@ -13,10 +15,19 @@
 </script>
 
 <main class="page">
-  <ParticlesCanvas imageSrc="/images/source.png" width="100vw" height="100vh" {params} />
+  <ParticlesCanvas
+    imageSrc="/images/source.png"
+    width="100vw"
+    height="100vh"
+    {params}
+    {paused}
+  />
   <div class="overlay">
     <h1>Svelte Image Particles</h1>
     <p>Move your cursor to disturb the particles.</p>
+    <button class="pause-btn" on:click={() => { paused = !paused; console.log('paused', paused); }}>
+      {paused ? 'Resume' : 'Pause'}
+    </button>
   </div>
 </main>
 
@@ -39,6 +50,7 @@
     position: absolute;
     left: 24px;
     top: 24px;
+    z-index: 10;
     background: rgba(255, 255, 255, 0.75);
     padding: 12px 16px;
     border-radius: 10px;
@@ -56,5 +68,20 @@
     margin: 0;
     font-size: 13px;
     opacity: 0.9;
+  }
+
+  .pause-btn {
+    margin-top: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: #fff;
+    color: #111;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .pause-btn:hover {
+    background: #f3f3f3;
   }
 </style>
