@@ -28,6 +28,7 @@ export default class WebGLView {
       antialias: true,
       alpha: true,
       premultipliedAlpha: true,
+      powerPreference: 'high-performance',
     })
     this.setPixelRatio(this.pixelRatio)
     this.renderer.setClearColor(0x000000, 0.0)
@@ -36,7 +37,7 @@ export default class WebGLView {
     // Just do an initial size (window as fallback)
     const w = window.innerWidth
     const h = window.innerHeight
-    this.renderer.setSize(w, h)
+    this.renderer.setSize(w, h, false)
 
     this.clock = new THREE.Clock(true)
   }
@@ -87,7 +88,7 @@ export default class WebGLView {
     this.fovHeight =
       2 * Math.tan((this.camera.fov * Math.PI) / 180 / 2) * this.camera.position.z
 
-    this.renderer.setSize(w, h)
+    this.renderer.setSize(w, h, false)
 
     if (this.interactive) this.interactive.resize()
     if (this.particles) this.particles.resize()

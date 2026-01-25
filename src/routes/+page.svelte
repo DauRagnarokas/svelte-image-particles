@@ -25,7 +25,7 @@
   <div class="overlay">
     <h1>Svelte Image Particles</h1>
     <p>Move your cursor to disturb the particles.</p>
-    <button class="pause-btn" on:click={() => { paused = !paused; console.log('paused', paused); }}>
+    <button class="pause-btn" on:click={() => (paused = !paused)}>
       {paused ? 'Resume' : 'Pause'}
     </button>
   </div>

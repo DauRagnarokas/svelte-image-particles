@@ -124,6 +124,9 @@
       if (webgl.renderer.domElement.parentElement !== containerEl) {
         containerEl.appendChild(webgl.renderer.domElement);
       }
+      webgl.renderer.domElement.style.width = '100%';
+      webgl.renderer.domElement.style.height = '100%';
+      webgl.renderer.domElement.style.display = 'block';
     }
 
     applyPixelRatio();
