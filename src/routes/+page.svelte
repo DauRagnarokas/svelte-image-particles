@@ -4,7 +4,7 @@
   let paused = false;
 
   const params = {
-    pixelStep: 2,
+    pixelStep: 1,
     maxParticles: 25000,
     uRandom: 2.2,
     uDepth: 2.5,

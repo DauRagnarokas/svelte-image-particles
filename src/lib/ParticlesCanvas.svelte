@@ -38,6 +38,8 @@
   export let mobileDefaults = true; // apply mobile-friendly defaults when pointer is coarse
   export let mobilePixelRatio: number | null = 1; // pixel ratio for mobile defaults
   export let mobileParams: any = { pixelStep: 3, maxParticles: 12000 }; // mobile-only defaults (fill missing keys)
+  export let maxParticles: number | null = 0; // desktop-only default max particles (fills when params lacks maxParticles)
+  export let pixelStep: number | null = 1; // desktop-only default pixel step (fills when params lacks pixelStep)
   export let paused = false; // pause the render loop
   export let pauseOnHidden = true; // auto-pause when the tab is hidden
 
@@ -206,9 +208,17 @@
     }
   });
 
+  $: baseParams = mergeDefaults(
+    params,
+    {
+      ...(maxParticles == null ? null : { maxParticles }),
+      ...(pixelStep == null ? null : { pixelStep }),
+    }
+  );
+
   $: effectiveParams = (mobileDefaults && isMobilePointer)
-    ? mergeDefaults(params, mobileParams)
-    : params;
+    ? mergeDefaults(baseParams, mobileParams)
+    : baseParams;
 
   $: pixelRatioFromParams =
     effectiveParams && typeof effectiveParams.pixelRatio !== 'undefined'
