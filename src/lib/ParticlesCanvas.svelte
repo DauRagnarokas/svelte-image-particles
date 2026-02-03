@@ -85,6 +85,7 @@
     maxParticles: 12000, // cap particle count for performance
     pixelRatio: 1, // lower renderer pixel ratio on mobile
   }; // mobile-only defaults (fill missing keys)
+  // debugMobile removed
 
   // Lifecycle
   export let persist = true; // reuse singleton WebGL instance across navigations
@@ -102,9 +103,11 @@
   let cleanupMediaQuery: (() => void) | null = null;
   let resizeObserver: ResizeObserver | null = null;
 
-  function getCoarsePointer() {
+  const MOBILE_MQ = '(pointer: coarse), (max-width: 900px)';
+
+  function getMobileMode() {
     if (!isBrowser() || !window.matchMedia) return false;
-    return window.matchMedia('(pointer: coarse)').matches;
+    return window.matchMedia(MOBILE_MQ).matches;
   }
 
   function mergeDefaults(base: ParticleParams, defaults: Partial<ParticleParams>) {
@@ -121,7 +124,7 @@
 
   function resolveEffectiveParams() {
     return (mobileDefaults && isMobilePointer)
-      ? mergeDefaults(params, mobileParams)
+      ? { ...(params || {}), ...(mobileParams || {}) }
       : params;
   }
 
@@ -201,9 +204,9 @@
 
   onMount(() => {
     if (!isBrowser()) return;
-    isMobilePointer = getCoarsePointer();
+    isMobilePointer = getMobileMode();
     if (window.matchMedia) {
-      const mq = window.matchMedia('(pointer: coarse)');
+      const mq = window.matchMedia(MOBILE_MQ);
       const handler = () => {
         isMobilePointer = mq.matches;
       };
@@ -278,7 +281,7 @@
     }
   });
 
-  $: effectiveParams = resolveEffectiveParams();
+  $: effectiveParams = (isMobilePointer, resolveEffectiveParams());
 
   $: pixelRatioFromParams =
     effectiveParams && typeof effectiveParams.pixelRatio !== 'undefined'

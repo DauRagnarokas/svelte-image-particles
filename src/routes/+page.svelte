@@ -20,6 +20,7 @@
     width="100%"
     height="100vh"
     {params}
+			mobileParams={{ pixelStep: 2, maxParticles: 10000, pixelRatio: 1.5 }}
     {paused}
   />
   <div class="overlay">
