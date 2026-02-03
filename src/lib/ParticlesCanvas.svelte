@@ -29,6 +29,8 @@
   export let params: any = {};
   export let width = '100%';
   export let height = '100%';
+  export let contain = false;
+  export let fit: 'cover' | 'contain' | null = null;
   export let persist = true;
   export let pixelRatio: number | null = 2;
   export let mobileDefaults = true;
@@ -173,7 +175,7 @@
 
     applyPixelRatio();
     webgl.resize();
-    webgl.particles?.setParams?.(effectiveParams);
+    webgl.particles?.setParams?.({ ...effectiveParams, fit });
 
     if (persist) {
       updatePauseState();
@@ -210,7 +212,8 @@
     : pixelRatio;
 
   $: if (isBrowser() && webgl && effectiveParams) {
-    webgl.particles?.setParams?.(effectiveParams);
+    const resolvedFit = contain ? 'contain' : fit;
+    webgl.particles?.setParams?.({ ...effectiveParams, fit: resolvedFit });
   }
 
   $: if (isBrowser() && webgl) {

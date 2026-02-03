@@ -30,6 +30,7 @@ export default class Particles {
     this.webgl = webgl
     this.container = new THREE.Object3D()
     this.params = { ...PARTICLE_PARAMS, ...overrides }
+    this.fit = overrides.fit || 'height'
 
     // tiny tween store (no deps)
     this._tweens = []
@@ -70,6 +71,7 @@ export default class Particles {
     const densityKeys = ['pixelStep','maxParticles','darknessThreshold','alphaMin']
     const densityChanged = densityKeys.some(k => k in next)
     this.params = { ...this.params, ...next }
+    if ('fit' in next) this.fit = next.fit || 'height'
 
     if (!this.object3D) return
 
@@ -325,7 +327,16 @@ export default class Particles {
 
   resize() {
     if (!this.object3D) return
-    const scale = this.webgl.fovHeight / this.height
+    const fovHeight = this.webgl.fovHeight
+    const fovWidth = fovHeight * (this.webgl.camera?.aspect || 1)
+    const scaleX = fovWidth / this.width
+    const scaleY = fovHeight / this.height
+    let scale = fovHeight / this.height
+    if (this.fit === 'contain') {
+      scale = Math.min(scaleX, scaleY)
+    } else if (this.fit === 'cover') {
+      scale = Math.max(scaleX, scaleY)
+    }
     this.object3D.scale.set(scale, scale, 1)
     this.hitArea.scale.set(scale, scale, 1)
   }
