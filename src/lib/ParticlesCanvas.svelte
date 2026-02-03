@@ -28,26 +28,42 @@
   import WebGLView from './scripts/WebGLView.js';
 
   type ParticleParams = {
-    /** Sample every Nth pixel (higher = fewer particles). */
+    /** Sample every Nth pixel (higher = fewer particles). Default: 1. */
     pixelStep?: number;
-    /** Hard cap on particle count (0/null disables). */
+    /** Hard cap on particle count (0/null disables). Default: 45000. */
     maxParticles?: number | null;
-    /** Skip pixels brighter than this (0-255). */
+    /** Skip pixels brighter than this (0-255). Default: 190. */
     darknessThreshold?: number;
-    /** Skip pixels with alpha below this (0-255). */
+    /** Skip pixels with alpha below this (0-255). Default: 8. */
     alphaMin?: number;
-    /** Random jitter amplitude. */
+    /** Random jitter amplitude. Default: 2.0. */
     uRandom?: number;
-    /** Depth displacement strength. */
+    /** Depth displacement strength. Default: 2.0. */
     uDepth?: number;
-    /** Particle size multiplier. */
+    /** Particle size multiplier. Default: 1.5. */
     uSize?: number;
-    /** Soft edge width for the particle sprite. */
+    /** Soft edge width for the particle sprite. Default: 0.06. */
     uEdge?: number;
-    /** Edge hardness exponent (higher = sharper). */
+    /** Edge hardness exponent (higher = sharper). Default: 6.0. */
     uSharpness?: number;
-    /** Renderer pixel ratio override (falls back to device pixel ratio). */
+    /** Renderer pixel ratio override (falls back to device pixel ratio, capped at 2). Default: undefined. */
     pixelRatio?: number | null;
+  };
+
+  // Default params (from Particles.js) for quick reference when tuning.
+  const PARTICLE_DEFAULTS: Required<Pick<ParticleParams,
+    'pixelStep' | 'maxParticles' | 'darknessThreshold' | 'alphaMin' |
+    'uRandom' | 'uDepth' | 'uSize' | 'uEdge' | 'uSharpness'
+  >> = {
+    pixelStep: 1,
+    maxParticles: 45000,
+    darknessThreshold: 190,
+    alphaMin: 8,
+    uRandom: 2.0,
+    uDepth: 2.0,
+    uSize: 1.5,
+    uEdge: 0.06,
+    uSharpness: 6.0,
   };
 
   // --- Component props ---
@@ -91,14 +107,35 @@
     return window.matchMedia('(pointer: coarse)').matches;
   }
 
-  function mergeDefaults(base: any, defaults: any) {
-    const next = { ...(base || {}) };
+  function mergeDefaults(base: ParticleParams, defaults: Partial<ParticleParams>) {
+    const next: ParticleParams = { ...(base || {}) };
     if (defaults) {
       for (const [key, value] of Object.entries(defaults)) {
-        if (next[key] == null) next[key] = value;
+        if ((next as Record<string, unknown>)[key] == null) {
+          (next as Record<string, unknown>)[key] = value;
+        }
       }
     }
     return next;
+  }
+
+  function resolveEffectiveParams() {
+    return (mobileDefaults && isMobilePointer)
+      ? mergeDefaults(params, mobileParams)
+      : params;
+  }
+
+  function resolveParticleParams(nextParams: ParticleParams | null | undefined) {
+    const resolvedFit = contain ? 'contain' : undefined;
+    // Strip renderer-only keys before passing to particle params
+    const { pixelRatio: _pixelRatio, ...particleParams } = nextParams || {};
+    return { ...particleParams, fit: resolvedFit };
+  }
+
+  function updateParticleParams() {
+    if (!webgl) return;
+    const nextParams = resolveParticleParams(effectiveParams);
+    webgl.particles?.setParams?.(nextParams);
   }
 
   function isBrowser() {
@@ -213,7 +250,7 @@
 
     applyPixelRatio();
     webgl.resize();
-    webgl.particles?.setParams?.({ ...effectiveParams, fit: contain ? 'contain' : undefined });
+    updateParticleParams();
 
     if (persist) {
       updatePauseState();
@@ -241,9 +278,7 @@
     }
   });
 
-  $: effectiveParams = (mobileDefaults && isMobilePointer)
-    ? mergeDefaults(params, mobileParams)
-    : params;
+  $: effectiveParams = resolveEffectiveParams();
 
   $: pixelRatioFromParams =
     effectiveParams && typeof effectiveParams.pixelRatio !== 'undefined'
@@ -253,10 +288,7 @@
   $: effectivePixelRatio = pixelRatioFromParams;
 
   $: if (isBrowser() && webgl && effectiveParams) {
-    const resolvedFit = contain ? 'contain' : undefined;
-    // Strip renderer-only keys before passing to particle params
-    const { pixelRatio: _pixelRatio, ...particleParams } = effectiveParams || {};
-    webgl.particles?.setParams?.({ ...particleParams, fit: resolvedFit });
+    updateParticleParams();
   }
 
   $: if (isBrowser() && webgl) {
