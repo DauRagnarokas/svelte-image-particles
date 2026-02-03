@@ -81,9 +81,13 @@ Override particle settings via the `params` prop:
   import { ParticlesCanvas } from 'svelte-image-particles';
 
   const params = {
-    particleSize: 2.0,
-    density: 1.2,
-    hoverStrength: 0.6
+    pixelStep: 2,
+    maxParticles: 25000,
+    uRandom: 2.2,
+    uDepth: 2.5,
+    uSize: 1.8,
+    uEdge: 0.05,
+    uSharpness: 7.0
   };
 </script>
 
@@ -97,8 +101,13 @@ Override particle settings via the `params` prop:
 | `params` | `object` | `{}` | Particle/shader parameter overrides passed to the renderer |
 | `width` | `string` | `100%` | Container width (CSS value) |
 | `height` | `string` | `100%` | Container height (CSS value) |
+| `contain` | `boolean` | `false` | Contain particles within the container (letterbox) |
+| `fit` | `'cover' \| 'contain' \| null` | `null` | Optional fit override (leave `null` for legacy height-based scale) |
 | `persist` | `boolean` | `true` | Reuse a singleton WebGL instance across navigations |
 | `pixelRatio` | `number \| null` | `2` | Device pixel ratio override; set `null` to use default |
+| `mobileDefaults` | `boolean` | `true` | Apply mobile-friendly defaults when pointer is coarse |
+| `mobilePixelRatio` | `number \| null` | `1` | Pixel ratio used when mobile defaults are active |
+| `mobileParams` | `object` | `{ pixelStep: 3, maxParticles: 12000 }` | Mobile-only defaults (only fill missing keys) |
 | `paused` | `boolean` | `false` | Pause the render loop |
 | `pauseOnHidden` | `boolean` | `true` | Auto-pause when the tab is hidden |
 

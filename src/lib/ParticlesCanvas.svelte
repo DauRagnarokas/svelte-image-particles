@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
   // Module-level singleton so the effect can persist across navigations
-  let shared: {
+  type SharedState = {
     webgl: any;
     frame: number;
     running: boolean;
@@ -9,7 +9,9 @@
     visibilityHandler: (() => void) | null;
     refCount: number;
     imageSrc: string | null;
-  } = {
+  };
+
+  let shared: SharedState = {
     webgl: null,
     frame: 0,
     running: false,
@@ -25,19 +27,19 @@
   import { onMount, onDestroy } from 'svelte';
   import WebGLView from './scripts/WebGLView.js';
 
-  export let imageSrc = '/images/source.png';
-  export let params: any = {};
-  export let width = '100%';
-  export let height = '100%';
-  export let contain = false;
-  export let fit: 'cover' | 'contain' | null = null;
-  export let persist = true;
-  export let pixelRatio: number | null = 2;
-  export let mobileDefaults = true;
-  export let mobilePixelRatio: number | null = 1;
-  export let mobileParams: any = { pixelStep: 3, maxParticles: 12000 };
-  export let paused = false;
-  export let pauseOnHidden = true;
+  export let imageSrc = '/images/source.png'; // image used to build particles
+  export let params: any = {}; // particle/shader params (can include pixelRatio for renderer scaling)
+  export let width = '100%'; // container width
+  export let height = '100%'; // container height
+  export let contain = false; // letterbox the effect instead of filling (fit can override)
+  export let fit: 'cover' | 'contain' | null = null; // optional fit override (null keeps legacy height-based scale)
+  export let persist = true; // reuse singleton WebGL instance across navigations
+  export let pixelRatio: number | null = 2; // deprecated: prefer params.pixelRatio
+  export let mobileDefaults = true; // apply mobile-friendly defaults when pointer is coarse
+  export let mobilePixelRatio: number | null = 1; // pixel ratio for mobile defaults
+  export let mobileParams: any = { pixelStep: 3, maxParticles: 12000 }; // mobile-only defaults (fill missing keys)
+  export let paused = false; // pause the render loop
+  export let pauseOnHidden = true; // auto-pause when the tab is hidden
 
   let webgl: any;
   let containerEl: HTMLDivElement;
@@ -207,13 +209,21 @@
     ? mergeDefaults(params, mobileParams)
     : params;
 
-  $: effectivePixelRatio = (mobileDefaults && isMobilePointer && (pixelRatio == null || pixelRatio === 2))
-    ? mobilePixelRatio
-    : pixelRatio;
+  $: pixelRatioFromParams =
+    effectiveParams && typeof effectiveParams.pixelRatio !== 'undefined'
+      ? effectiveParams.pixelRatio
+      : pixelRatio;
+
+  $: effectivePixelRatio =
+    mobileDefaults && isMobilePointer && (pixelRatioFromParams == null || pixelRatioFromParams === 2)
+      ? mobilePixelRatio
+      : pixelRatioFromParams;
 
   $: if (isBrowser() && webgl && effectiveParams) {
     const resolvedFit = contain ? 'contain' : fit;
-    webgl.particles?.setParams?.({ ...effectiveParams, fit: resolvedFit });
+    // Strip renderer-only keys before passing to particle params
+    const { pixelRatio: _pixelRatio, ...particleParams } = effectiveParams || {};
+    webgl.particles?.setParams?.({ ...particleParams, fit: resolvedFit });
   }
 
   $: if (isBrowser() && webgl) {

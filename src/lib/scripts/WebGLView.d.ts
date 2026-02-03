@@ -1,5 +1,5 @@
 export default class WebGLView {
-    constructor(app: any, imageSrc?: string);
+    constructor(app: any, imageSrc?: string, options?: { pixelRatio?: number | null });
     app: any;
     imageSrc: string;
     initThree(): void;

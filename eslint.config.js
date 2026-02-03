@@ -22,6 +22,11 @@ export default [
 	},
 	{
 		files: ['**/*.svelte', '**/*.svelte.js'],
-		languageOptions: { parserOptions: { svelteConfig } }
+		languageOptions: {
+			parserOptions: {
+				parser: '@typescript-eslint/parser',
+				svelteConfig
+			}
+		}
 	}
 ];
