@@ -158,6 +158,7 @@
       }
 
       webgl = shared.webgl;
+      if (webgl?.app) webgl.app.container = containerEl;
     } else {
       webgl = new WebGLView(
         { container: containerEl },
