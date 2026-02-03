@@ -52,14 +52,16 @@ export default class TouchTexture {
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	}
 
-	addTouch(point) {
-		let force = 0;
-		const last = this.trail[this.trail.length - 1];
-		if (last) {
-			const dx = last.x - point.x;
-			const dy = last.y - point.y;
-			const dd = dx * dx + dy * dy;
-			force = Math.min(dd * 10000, 1);
+	addTouch(point, forceOverride) {
+		let force = typeof forceOverride === 'number' ? forceOverride : 0;
+		if (forceOverride == null) {
+			const last = this.trail[this.trail.length - 1];
+			if (last) {
+				const dx = last.x - point.x;
+				const dy = last.y - point.y;
+				const dd = dx * dx + dy * dy;
+				force = Math.min(dd * 10000, 1);
+			}
 		}
 		this.trail.push({ x: point.x, y: point.y, age: 0, force });
 	}

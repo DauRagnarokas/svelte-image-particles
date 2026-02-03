@@ -31,6 +31,9 @@
   export let height = '100%';
   export let persist = true;
   export let pixelRatio: number | null = 2;
+  export let mobileDefaults = true;
+  export let mobilePixelRatio: number | null = 1;
+  export let mobileParams: any = { pixelStep: 3, maxParticles: 12000 };
   export let paused = false;
   export let pauseOnHidden = true;
 
@@ -40,6 +43,24 @@
   let handleResize: (() => void) | null = null;
   let handleVisibility: (() => void) | null = null;
   let localPaused = false;
+  let isMobilePointer = false;
+  let cleanupMediaQuery: (() => void) | null = null;
+  let resizeObserver: ResizeObserver | null = null;
+
+  function getCoarsePointer() {
+    if (!isBrowser() || !window.matchMedia) return false;
+    return window.matchMedia('(pointer: coarse)').matches;
+  }
+
+  function mergeDefaults(base: any, defaults: any) {
+    const next = { ...(base || {}) };
+    if (defaults) {
+      for (const [key, value] of Object.entries(defaults)) {
+        if (next[key] == null) next[key] = value;
+      }
+    }
+    return next;
+  }
 
   function isBrowser() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -74,7 +95,7 @@
 
   function applyPixelRatio() {
     if (!webgl) return;
-    const pr = pixelRatio == null ? null : Number(pixelRatio);
+    const pr = effectivePixelRatio == null ? null : Number(effectivePixelRatio);
     webgl.setPixelRatio?.(pr);
   }
 
@@ -104,6 +125,19 @@
 
   onMount(() => {
     if (!isBrowser()) return;
+    isMobilePointer = getCoarsePointer();
+    if (window.matchMedia) {
+      const mq = window.matchMedia('(pointer: coarse)');
+      const handler = () => {
+        isMobilePointer = mq.matches;
+      };
+      if (mq.addEventListener) mq.addEventListener('change', handler);
+      else mq.addListener(handler);
+      cleanupMediaQuery = () => {
+        if (mq.removeEventListener) mq.removeEventListener('change', handler);
+        else mq.removeListener(handler);
+      };
+    }
 
     if (persist) {
       shared.refCount += 1;
@@ -111,13 +145,21 @@
       const needsRecreate = shared.webgl && shared.imageSrc && shared.imageSrc !== imageSrc;
       if (!shared.webgl || needsRecreate) {
         if (shared.webgl) shared.webgl.dispose?.();
-        shared.webgl = new WebGLView({ container: containerEl }, imageSrc, { pixelRatio });
+        shared.webgl = new WebGLView(
+          { container: containerEl },
+          imageSrc,
+          { pixelRatio: effectivePixelRatio }
+        );
         shared.imageSrc = imageSrc;
       }
 
       webgl = shared.webgl;
     } else {
-      webgl = new WebGLView({ container: containerEl }, imageSrc, { pixelRatio });
+      webgl = new WebGLView(
+        { container: containerEl },
+        imageSrc,
+        { pixelRatio: effectivePixelRatio }
+      );
     }
 
     if (webgl?.renderer?.domElement) {
@@ -131,7 +173,7 @@
 
     applyPixelRatio();
     webgl.resize();
-    webgl.particles?.setParams?.(params);
+    webgl.particles?.setParams?.(effectiveParams);
 
     if (persist) {
       updatePauseState();
@@ -152,14 +194,26 @@
         document.addEventListener('visibilitychange', handleVisibility);
       }
     }
+
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => webgl?.resize?.());
+      resizeObserver.observe(containerEl);
+    }
   });
 
-  $: if (isBrowser() && webgl && params) {
-    webgl.particles?.setParams?.(params);
+  $: effectiveParams = (mobileDefaults && isMobilePointer)
+    ? mergeDefaults(params, mobileParams)
+    : params;
+
+  $: effectivePixelRatio = (mobileDefaults && isMobilePointer && (pixelRatio == null || pixelRatio === 2))
+    ? mobilePixelRatio
+    : pixelRatio;
+
+  $: if (isBrowser() && webgl && effectiveParams) {
+    webgl.particles?.setParams?.(effectiveParams);
   }
 
   $: if (isBrowser() && webgl) {
-    pixelRatio;
     applyPixelRatio();
   }
 
@@ -171,6 +225,11 @@
 
   onDestroy(() => {
     if (!isBrowser()) return;
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+    if (cleanupMediaQuery) cleanupMediaQuery();
     if (persist) {
       shared.refCount -= 1;
       if (webgl?.renderer?.domElement && containerEl) {

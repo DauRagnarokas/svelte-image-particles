@@ -17,7 +17,7 @@
 <main class="page">
   <ParticlesCanvas
     imageSrc="/images/source.png"
-    width="100vw"
+    width="100%"
     height="100vh"
     {params}
     {paused}

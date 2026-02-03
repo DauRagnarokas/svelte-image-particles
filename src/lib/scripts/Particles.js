@@ -253,13 +253,16 @@ export default class Particles {
 
   addListeners() {
     this.handlerInteractiveMove = this.onInteractiveMove.bind(this)
+    this.handlerInteractiveDown = this.onInteractiveDown.bind(this)
     this.webgl.interactive.addListener('interactive-move', this.handlerInteractiveMove)
+    this.webgl.interactive.addListener('interactive-down', this.handlerInteractiveDown)
     this.webgl.interactive.objects.push(this.hitArea)
     this.webgl.interactive.enable()
   }
 
   removeListeners() {
     this.webgl.interactive.removeListener('interactive-move', this.handlerInteractiveMove)
+    this.webgl.interactive.removeListener('interactive-down', this.handlerInteractiveDown)
     const index = this.webgl.interactive.objects.findIndex((obj) => obj === this.hitArea)
     if (index > -1) this.webgl.interactive.objects.splice(index, 1)
     this.webgl.interactive.disable()
@@ -330,5 +333,12 @@ export default class Particles {
   onInteractiveMove(e) {
     const uv = e.intersectionData.uv
     if (this.touch) this.touch.addTouch(uv)
+  }
+
+  onInteractiveDown(e) {
+    const uv = e.intersectionData?.uv
+    if (!uv) return
+    // Tap/click burst for mobile or non-hover interactions
+    if (this.touch) this.touch.addTouch(uv, 1)
   }
 }

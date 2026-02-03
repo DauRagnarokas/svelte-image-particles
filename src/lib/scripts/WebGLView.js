@@ -34,10 +34,12 @@ export default class WebGLView {
     this.renderer.setClearColor(0x000000, 0.0)
 
     // 🔥 don’t append canvas here, App will handle it
-    // Just do an initial size (window as fallback)
-    const w = window.innerWidth
-    const h = window.innerHeight
-    this.renderer.setSize(w, h, false)
+    // Initial size should match the container when possible.
+    const cw = this.app?.container?.clientWidth
+    const ch = this.app?.container?.clientHeight
+    const w = cw ?? window.innerWidth
+    const h = ch ?? window.innerHeight
+    this.renderer.setSize(Math.max(1, w), Math.max(1, h), false)
 
     this.clock = new THREE.Clock(true)
   }
@@ -78,17 +80,20 @@ export default class WebGLView {
   resize() {
     if (!this.renderer) return
 
-    // default: match window size
-    const w = this.app?.container?.clientWidth || window.innerWidth
-    const h = this.app?.container?.clientHeight || window.innerHeight
+    // default: match container size (fallback to window only when undefined)
+    const w = this.app?.container?.clientWidth ?? window.innerWidth
+    const h = this.app?.container?.clientHeight ?? window.innerHeight
 
-    this.camera.aspect = w / h
+    const safeW = Math.max(1, w)
+    const safeH = Math.max(1, h)
+
+    this.camera.aspect = safeW / safeH
     this.camera.updateProjectionMatrix()
 
     this.fovHeight =
       2 * Math.tan((this.camera.fov * Math.PI) / 180 / 2) * this.camera.position.z
 
-    this.renderer.setSize(w, h, false)
+    this.renderer.setSize(safeW, safeH, false)
 
     if (this.interactive) this.interactive.resize()
     if (this.particles) this.particles.resize()
