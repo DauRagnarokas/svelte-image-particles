@@ -98,21 +98,18 @@ Override particle settings via the `params` prop:
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `imageSrc` | `string` | `/images/source.png` | Path/URL to the image to convert to particles |
-| `params` | `object` | `{}` | Particle/shader parameter overrides passed to the renderer |
 | `width` | `string` | `100%` | Container width (CSS value) |
 | `height` | `string` | `100%` | Container height (CSS value) |
 | `contain` | `boolean` | `false` | Contain particles within the container (letterbox) |
-| `fit` | `'cover' \| 'contain' \| null` | `null` | Optional fit override (leave `null` for legacy height-based scale) |
-| `persist` | `boolean` | `true` | Reuse a singleton WebGL instance across navigations |
-| `pixelRatio` | `number \| null` | `2` | Device pixel ratio override; set `null` to use default |
+| `params` | `object` | `{}` | Particle/shader parameter overrides passed to the renderer |
 | `mobileDefaults` | `boolean` | `true` | Apply mobile-friendly defaults when pointer is coarse |
-| `mobilePixelRatio` | `number \| null` | `1` | Pixel ratio used when mobile defaults are active |
-| `mobileParams` | `object` | `{ pixelStep: 3, maxParticles: 12000 }` | Mobile-only defaults (only fill missing keys) |
+| `mobileParams` | `object` | `{ pixelStep: 3, maxParticles: 12000, pixelRatio: 1 }` | Mobile-only defaults (only fill missing keys) |
+| `persist` | `boolean` | `true` | Reuse a singleton WebGL instance across navigations |
 | `paused` | `boolean` | `false` | Pause the render loop |
 | `pauseOnHidden` | `boolean` | `true` | Auto-pause when the tab is hidden |
 
 ### `params` keys
-These map directly to `Particles` internals and shader uniforms.
+These map directly to `Particles.setParams()` and shader uniforms (see `src/lib/scripts/Particles.js` for defaults).
 
 | Key | Type | Default | Meaning |
 | --- | --- | --- | --- |
@@ -120,6 +117,7 @@ These map directly to `Particles` internals and shader uniforms.
 | `maxParticles` | `number` | `45000` | Hard cap on particle count (`0`/`null` disables) |
 | `darknessThreshold` | `number` | `190` | Skip pixels brighter than this (0-255) |
 | `alphaMin` | `number` | `8` | Skip pixels with alpha below this (0-255) |
+| `pixelRatio` | `number \| null` | `undefined` | Renderer pixel ratio override (falls back to device pixel ratio) |
 | `uRandom` | `number` | `2.0` | Random jitter amplitude |
 | `uDepth` | `number` | `2.0` | Depth displacement strength |
 | `uSize` | `number` | `1.5` | Particle size multiplier |

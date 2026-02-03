@@ -27,21 +27,54 @@
   import { onMount, onDestroy } from 'svelte';
   import WebGLView from './scripts/WebGLView.js';
 
+  type ParticleParams = {
+    /** Sample every Nth pixel (higher = fewer particles). */
+    pixelStep?: number;
+    /** Hard cap on particle count (0/null disables). */
+    maxParticles?: number | null;
+    /** Skip pixels brighter than this (0-255). */
+    darknessThreshold?: number;
+    /** Skip pixels with alpha below this (0-255). */
+    alphaMin?: number;
+    /** Random jitter amplitude. */
+    uRandom?: number;
+    /** Depth displacement strength. */
+    uDepth?: number;
+    /** Particle size multiplier. */
+    uSize?: number;
+    /** Soft edge width for the particle sprite. */
+    uEdge?: number;
+    /** Edge hardness exponent (higher = sharper). */
+    uSharpness?: number;
+    /** Renderer pixel ratio override (falls back to device pixel ratio). */
+    pixelRatio?: number | null;
+  };
+
+  // --- Component props ---
+  // Source
   export let imageSrc = '/images/source.png'; // image used to build particles
-  export let params: any = {}; // particle/shader params (can include pixelRatio for renderer scaling)
+
+  // Layout
   export let width = '100%'; // container width
   export let height = '100%'; // container height
-  export let contain = false; // letterbox the effect instead of filling (fit can override)
-  export let fit: 'cover' | 'contain' | null = null; // optional fit override (null keeps legacy height-based scale)
-  export let persist = true; // reuse singleton WebGL instance across navigations
-  export let pixelRatio: number | null = 2; // deprecated: prefer params.pixelRatio
+  export let contain = false; // letterbox the effect instead of filling
+
+  // Rendering / params
+  export let params: ParticleParams = {}; // particle/shader params (can include pixelRatio for renderer scaling)
+
+  // Mobile defaults
   export let mobileDefaults = true; // apply mobile-friendly defaults when pointer is coarse
-  export let mobilePixelRatio: number | null = 1; // pixel ratio for mobile defaults
-  export let mobileParams: any = { pixelStep: 3, maxParticles: 12000 }; // mobile-only defaults (fill missing keys)
-  export let maxParticles: number | null = 0; // desktop-only default max particles (fills when params lacks maxParticles)
-  export let pixelStep: number | null = 1; // desktop-only default pixel step (fills when params lacks pixelStep)
+  export let mobileParams: Partial<ParticleParams> = {
+    pixelStep: 3, // fewer particles on mobile
+    maxParticles: 12000, // cap particle count for performance
+    pixelRatio: 1, // lower renderer pixel ratio on mobile
+  }; // mobile-only defaults (fill missing keys)
+
+  // Lifecycle
+  export let persist = true; // reuse singleton WebGL instance across navigations
   export let paused = false; // pause the render loop
   export let pauseOnHidden = true; // auto-pause when the tab is hidden
+  // --- End component props ---
 
   let webgl: any;
   let containerEl: HTMLDivElement;
@@ -180,7 +213,7 @@
 
     applyPixelRatio();
     webgl.resize();
-    webgl.particles?.setParams?.({ ...effectiveParams, fit });
+    webgl.particles?.setParams?.({ ...effectiveParams, fit: contain ? 'contain' : undefined });
 
     if (persist) {
       updatePauseState();
@@ -208,30 +241,19 @@
     }
   });
 
-  $: baseParams = mergeDefaults(
-    params,
-    {
-      ...(maxParticles == null ? null : { maxParticles }),
-      ...(pixelStep == null ? null : { pixelStep }),
-    }
-  );
-
   $: effectiveParams = (mobileDefaults && isMobilePointer)
-    ? mergeDefaults(baseParams, mobileParams)
-    : baseParams;
+    ? mergeDefaults(params, mobileParams)
+    : params;
 
   $: pixelRatioFromParams =
     effectiveParams && typeof effectiveParams.pixelRatio !== 'undefined'
       ? effectiveParams.pixelRatio
-      : pixelRatio;
+      : undefined;
 
-  $: effectivePixelRatio =
-    mobileDefaults && isMobilePointer && (pixelRatioFromParams == null || pixelRatioFromParams === 2)
-      ? mobilePixelRatio
-      : pixelRatioFromParams;
+  $: effectivePixelRatio = pixelRatioFromParams;
 
   $: if (isBrowser() && webgl && effectiveParams) {
-    const resolvedFit = contain ? 'contain' : fit;
+    const resolvedFit = contain ? 'contain' : undefined;
     // Strip renderer-only keys before passing to particle params
     const { pixelRatio: _pixelRatio, ...particleParams } = effectiveParams || {};
     webgl.particles?.setParams?.({ ...particleParams, fit: resolvedFit });
