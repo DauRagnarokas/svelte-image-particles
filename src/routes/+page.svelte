@@ -19,10 +19,15 @@
     imageSrc="/images/source.png"
     width="100%"
     height="100vh"
+    persist={true}
     {params}
 			mobileParams={{ pixelStep: 2, maxParticles: 10000, pixelRatio: 1.5 }}
     {paused}
   />
+  <nav class="nav">
+    <a class="nav-link" href="/">Particles</a>
+    <a class="nav-link" href="/second">Second</a>
+  </nav>
   <div class="overlay">
     <h1>Svelte Image Particles</h1>
     <p>Move your cursor to disturb the particles.</p>
@@ -69,6 +74,32 @@
     margin: 0;
     font-size: 13px;
     opacity: 0.9;
+  }
+
+  .nav {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    z-index: 20;
+    display: flex;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(8px);
+  }
+
+  .nav-link {
+    font-size: 12px;
+    color: #111;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 999px;
+  }
+
+  .nav-link:hover {
+    background: rgba(0, 0, 0, 0.06);
   }
 
   .pause-btn {

@@ -34,6 +34,7 @@ export default class Particles {
 
     // tiny tween store (no deps)
     this._tweens = []
+    this.listenersActive = false
   }
 
   // --- tiny tween system (no external libs) -----------------------
@@ -254,20 +255,29 @@ export default class Particles {
   }
 
   addListeners() {
+    if (!this.hitArea) return
+    if (this.listenersActive) {
+      const hasHitArea = this.webgl?.interactive?.objects?.includes?.(this.hitArea)
+      if (hasHitArea) return
+      this.removeListeners()
+    }
     this.handlerInteractiveMove = this.onInteractiveMove.bind(this)
     this.handlerInteractiveDown = this.onInteractiveDown.bind(this)
     this.webgl.interactive.addListener('interactive-move', this.handlerInteractiveMove)
     this.webgl.interactive.addListener('interactive-down', this.handlerInteractiveDown)
     this.webgl.interactive.objects.push(this.hitArea)
     this.webgl.interactive.enable()
+    this.listenersActive = true
   }
 
   removeListeners() {
+    if (!this.listenersActive) return
     this.webgl.interactive.removeListener('interactive-move', this.handlerInteractiveMove)
     this.webgl.interactive.removeListener('interactive-down', this.handlerInteractiveDown)
     const index = this.webgl.interactive.objects.findIndex((obj) => obj === this.hitArea)
     if (index > -1) this.webgl.interactive.objects.splice(index, 1)
     this.webgl.interactive.disable()
+    this.listenersActive = false
   }
 
   update(delta) {

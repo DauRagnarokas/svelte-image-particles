@@ -5,6 +5,8 @@
     frame: number;
     running: boolean;
     paused: boolean;
+    previewFrame: number;
+    previewTick: number;
     resizeHandler: (() => void) | null;
     visibilityHandler: (() => void) | null;
     refCount: number;
@@ -16,6 +18,8 @@
     frame: 0,
     running: false,
     paused: false,
+    previewFrame: 0,
+    previewTick: 0,
     resizeHandler: null,
     visibilityHandler: null,
     refCount: 0,
@@ -172,22 +176,65 @@
     shared.running = false;
   }
 
+  function startPreviewLoop() {
+    if (shared.previewFrame) return;
+    const tick = () => {
+      if (!shared.webgl) return;
+      shared.previewTick += 1;
+      if (shared.previewTick % 2 === 0) {
+        shared.webgl.drawFrame?.();
+      }
+      shared.previewFrame = requestAnimationFrame(tick);
+    };
+    shared.previewFrame = requestAnimationFrame(tick);
+  }
+
+  function stopPreviewLoop() {
+    if (shared.previewFrame) cancelAnimationFrame(shared.previewFrame);
+    shared.previewFrame = 0;
+    shared.previewTick = 0;
+  }
+
   function applyPixelRatio() {
     if (!webgl) return;
     const pr = effectivePixelRatio == null ? null : Number(effectivePixelRatio);
     webgl.setPixelRatio?.(pr);
   }
 
+  function scheduleInitialResize() {
+    if (!isBrowser() || !webgl || !containerEl) return;
+    let attempts = 0;
+    const tryResize = () => {
+      const w = containerEl.clientWidth;
+      const h = containerEl.clientHeight;
+      if (w > 0 && h > 0) {
+        webgl.resize();
+      } else if (attempts < 5) {
+        attempts += 1;
+        requestAnimationFrame(tryResize);
+      }
+    };
+    requestAnimationFrame(tryResize);
+  }
+
   function updatePauseState() {
     const hidden = pauseOnHidden && typeof document !== 'undefined' && document.hidden;
     const nextPaused = Boolean(paused || hidden);
     if (persist) {
-      shared.paused = nextPaused;
-      shared.webgl?.setPaused?.(shared.paused);
-      if (shared.paused) {
+      if (nextPaused) {
+        shared.paused = true;
+        shared.webgl?.setPaused?.(true);
+        shared.webgl?.particles?.removeListeners?.();
+        startPreviewLoop();
         shared.running = false;
         stopLoop();
       } else {
+        stopPreviewLoop();
+        shared.paused = false;
+        shared.webgl?.setPaused?.(false);
+        if (shared.webgl) shared.webgl.skipNextDelta = true;
+        shared.webgl?.particles?.addListeners?.();
+        shared.webgl?.clock?.start?.();
         startLoop();
       }
     } else {
@@ -252,7 +299,7 @@
     }
 
     applyPixelRatio();
-    webgl.resize();
+    scheduleInitialResize();
     updateParticleParams();
 
     if (persist) {
@@ -313,10 +360,13 @@
     if (cleanupMediaQuery) cleanupMediaQuery();
     if (persist) {
       shared.refCount -= 1;
+      shared.webgl?.particles?.removeListeners?.();
       if (webgl?.renderer?.domElement && containerEl) {
         containerEl.removeChild(webgl.renderer.domElement);
       }
       if (shared.refCount <= 0) {
+        shared.webgl?.setPaused?.(true);
+        stopPreviewLoop();
         stopLoop();
         if (shared.resizeHandler) {
           window.removeEventListener('resize', shared.resizeHandler);

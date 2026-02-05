@@ -9,6 +9,8 @@ export default class WebGLView {
     this.imageSrc = imageSrc
     this.pixelRatio = options.pixelRatio
     this.paused = false
+    this.maxDelta = 0.05
+    this.skipNextDelta = false
 
     this.initThree()
     this.initParticles()
@@ -68,12 +70,23 @@ export default class WebGLView {
 
   update() {
     if (this.paused) return
-    const delta = this.clock.getDelta()
+    const rawDelta = this.clock.getDelta()
+    let delta = Math.min(rawDelta, this.maxDelta)
+    if (this.skipNextDelta) {
+      delta = 0
+      this.skipNextDelta = false
+    }
     if (this.particles) this.particles.update(delta)
   }
 
   draw() {
     if (this.paused) return
+    this.renderer.render(this.scene, this.camera)
+  }
+
+  // Render a frame without advancing simulation state.
+  drawFrame() {
+    if (!this.renderer || !this.scene || !this.camera) return
     this.renderer.render(this.scene, this.camera)
   }
 
