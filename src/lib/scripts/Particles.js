@@ -17,6 +17,9 @@ export const PARTICLE_PARAMS = {
   uSize: 1.5,
   uEdge: 0.06,
   uSharpness: 6.0,
+
+  // interaction
+  touchBurstForce: 3,    // tap/click burst strength
 }
 
 // helper: support old/new three attribute APIs
@@ -360,6 +363,6 @@ export default class Particles {
     const uv = e.intersectionData?.uv
     if (!uv) return
     // Tap/click burst for mobile or non-hover interactions
-    if (this.touch) this.touch.addTouch(uv, 1)
+    if (this.touch) this.touch.addTouch(uv, this.params.touchBurstForce)
   }
 }

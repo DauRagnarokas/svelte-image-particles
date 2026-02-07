@@ -50,6 +50,8 @@
     uEdge?: number;
     /** Edge hardness exponent (higher = sharper). Default: 6.0. */
     uSharpness?: number;
+    /** Tap/click burst strength. Default: 3. */
+    touchBurstForce?: number;
     /** Renderer pixel ratio override (falls back to device pixel ratio, capped at 2). Default: undefined. */
     pixelRatio?: number | null;
   };
@@ -57,7 +59,7 @@
   // Default params (from Particles.js) for quick reference when tuning.
   const PARTICLE_DEFAULTS: Required<Pick<ParticleParams,
     'pixelStep' | 'maxParticles' | 'darknessThreshold' | 'alphaMin' |
-    'uRandom' | 'uDepth' | 'uSize' | 'uEdge' | 'uSharpness'
+    'uRandom' | 'uDepth' | 'uSize' | 'uEdge' | 'uSharpness' | 'touchBurstForce'
   >> = {
     pixelStep: 1,
     maxParticles: 45000,
@@ -68,6 +70,7 @@
     uSize: 1.5,
     uEdge: 0.06,
     uSharpness: 6.0,
+    touchBurstForce: 3,
   };
 
   // --- Component props ---

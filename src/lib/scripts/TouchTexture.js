@@ -54,6 +54,7 @@ export default class TouchTexture {
 
 	addTouch(point, forceOverride) {
 		let force = typeof forceOverride === 'number' ? forceOverride : 0;
+		const boost = typeof forceOverride === 'number';
 		if (forceOverride == null) {
 			const last = this.trail[this.trail.length - 1];
 			if (last) {
@@ -63,7 +64,7 @@ export default class TouchTexture {
 				force = Math.min(dd * 10000, 1);
 			}
 		}
-		this.trail.push({ x: point.x, y: point.y, age: 0, force });
+		this.trail.push({ x: point.x, y: point.y, age: 0, force, boost });
 	}
 
 	drawTouch(point) {
@@ -79,11 +80,13 @@ export default class TouchTexture {
 			intensity = easeOutSine(1 - (point.age - this.maxAge * 0.3) / (this.maxAge * 0.7), 0, 1, 1);
 		}
 
-		intensity *= point.force;
+		const force = point.force || 0;
+		intensity *= force;
 
 		const radius = this.size * this.radius * intensity;
 		const grd = this.ctx.createRadialGradient(pos.x, pos.y, radius * 0.25, pos.x, pos.y, radius);
-		grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
+		const alpha = point.boost ? Math.min(0.2 * force, 0.9) : 0.2;
+		grd.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
 		grd.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
 
 		this.ctx.beginPath();
