@@ -52,6 +52,10 @@
     uSharpness?: number;
     /** Tap/click burst strength. Default: 3. */
     touchBurstForce?: number;
+    /** Long-press burst strength. Default: 10. */
+    longTouchBurstForce?: number;
+    /** Long-press delay in ms. Default: 350. */
+    longTouchDelay?: number;
     /** Renderer pixel ratio override (falls back to device pixel ratio, capped at 2). Default: undefined. */
     pixelRatio?: number | null;
   };
@@ -59,7 +63,7 @@
   // Default params (from Particles.js) for quick reference when tuning.
   const PARTICLE_DEFAULTS: Required<Pick<ParticleParams,
     'pixelStep' | 'maxParticles' | 'darknessThreshold' | 'alphaMin' |
-    'uRandom' | 'uDepth' | 'uSize' | 'uEdge' | 'uSharpness' | 'touchBurstForce'
+    'uRandom' | 'uDepth' | 'uSize' | 'uEdge' | 'uSharpness' | 'touchBurstForce' | 'longTouchBurstForce' | 'longTouchDelay'
   >> = {
     pixelStep: 1,
     maxParticles: 45000,
@@ -71,6 +75,8 @@
     uEdge: 0.06,
     uSharpness: 6.0,
     touchBurstForce: 3,
+    longTouchBurstForce: 10,
+    longTouchDelay: 350,
   };
 
   // --- Component props ---

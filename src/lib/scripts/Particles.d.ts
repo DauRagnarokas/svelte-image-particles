@@ -8,6 +8,9 @@ export namespace PARTICLE_PARAMS {
     let uSize: number;
     let uEdge: number;
     let uSharpness: number;
+    let touchBurstForce: number;
+    let longTouchBurstForce: number;
+    let longTouchDelay: number;
 }
 export default class Particles {
     constructor(webgl: any, overrides?: {});
@@ -23,6 +26,9 @@ export default class Particles {
         uSize: number;
         uEdge: number;
         uSharpness: number;
+        touchBurstForce: number;
+        longTouchBurstForce: number;
+        longTouchDelay: number;
     };
     _tweens: any[];
     _tween(uniform: any, toValue: any, duration: number, ease: (t: any) => any, onComplete: any): void;
@@ -42,6 +48,7 @@ export default class Particles {
     hitArea: any;
     addListeners(): void;
     handlerInteractiveMove: any;
+    handlerInteractiveUp: any;
     removeListeners(): void;
     update(delta: any): void;
     show(time?: number): void;
@@ -49,5 +56,9 @@ export default class Particles {
     destroy(): void;
     resize(): void;
     onInteractiveMove(e: any): void;
+    onInteractiveDown(e: any): void;
+    onInteractiveUp(): void;
+    clearLongTouchTimer(): void;
+    clearLongTouch(): void;
 }
 import TouchTexture from './TouchTexture';

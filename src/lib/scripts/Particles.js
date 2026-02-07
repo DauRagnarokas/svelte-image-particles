@@ -20,6 +20,8 @@ export const PARTICLE_PARAMS = {
 
   // interaction
   touchBurstForce: 5,    // tap/click burst strength
+  longTouchBurstForce: 10, // long-press burst strength
+  longTouchDelay: 350,   // ms before long-press triggers
 }
 
 // helper: support old/new three attribute APIs
@@ -38,6 +40,10 @@ export default class Particles {
     // tiny tween store (no deps)
     this._tweens = []
     this.listenersActive = false
+
+    this.longTouchTimer = null
+    this.longTouchUv = null
+    this.longTouchFired = false
   }
 
   // --- tiny tween system (no external libs) -----------------------
@@ -266,8 +272,10 @@ export default class Particles {
     }
     this.handlerInteractiveMove = this.onInteractiveMove.bind(this)
     this.handlerInteractiveDown = this.onInteractiveDown.bind(this)
+    this.handlerInteractiveUp = this.onInteractiveUp.bind(this)
     this.webgl.interactive.addListener('interactive-move', this.handlerInteractiveMove)
     this.webgl.interactive.addListener('interactive-down', this.handlerInteractiveDown)
+    this.webgl.interactive.addListener('interactive-up', this.handlerInteractiveUp)
     this.webgl.interactive.objects.push(this.hitArea)
     this.webgl.interactive.enable()
     this.listenersActive = true
@@ -277,10 +285,12 @@ export default class Particles {
     if (!this.listenersActive) return
     this.webgl.interactive.removeListener('interactive-move', this.handlerInteractiveMove)
     this.webgl.interactive.removeListener('interactive-down', this.handlerInteractiveDown)
+    this.webgl.interactive.removeListener('interactive-up', this.handlerInteractiveUp)
     const index = this.webgl.interactive.objects.findIndex((obj) => obj === this.hitArea)
     if (index > -1) this.webgl.interactive.objects.splice(index, 1)
     this.webgl.interactive.disable()
     this.listenersActive = false
+    this.clearLongTouch()
   }
 
   update(delta) {
@@ -316,6 +326,7 @@ export default class Particles {
   destroy() {
     if (!this.object3D) return
     this.removeListeners()
+    this.clearLongTouch()
     this.object3D.parent.remove(this.object3D)
     this.object3D.geometry.dispose()
     this.object3D.material.dispose()
@@ -364,5 +375,39 @@ export default class Particles {
     if (!uv) return
     // Tap/click burst for mobile or non-hover interactions
     if (this.touch) this.touch.addTouch(uv, this.params.touchBurstForce)
+
+    this.longTouchUv = { x: uv.x, y: uv.y }
+    this.longTouchFired = false
+    this.clearLongTouchTimer()
+    const delay = Number(this.params.longTouchDelay) || 0
+    if (delay > 0) {
+      this.longTouchTimer = setTimeout(() => {
+        if (this.longTouchFired) return
+        if (!this.webgl?.interactive?.pointer?.isDown) return
+        if (!this.longTouchUv) return
+        const force = (typeof this.params.longTouchBurstForce === 'number')
+          ? this.params.longTouchBurstForce
+          : this.params.touchBurstForce
+        if (this.touch) this.touch.addTouch(this.longTouchUv, force)
+        this.longTouchFired = true
+      }, delay)
+    }
+  }
+
+  onInteractiveUp() {
+    this.clearLongTouch()
+  }
+
+  clearLongTouchTimer() {
+    if (this.longTouchTimer) {
+      clearTimeout(this.longTouchTimer)
+      this.longTouchTimer = null
+    }
+  }
+
+  clearLongTouch() {
+    this.clearLongTouchTimer()
+    this.longTouchUv = null
+    this.longTouchFired = false
   }
 }

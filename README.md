@@ -87,7 +87,10 @@ Override particle settings via the `params` prop:
     uDepth: 2.5,
     uSize: 1.8,
     uEdge: 0.05,
-    uSharpness: 7.0
+    uSharpness: 7.0,
+    touchBurstForce: 5,
+    longTouchBurstForce: 10,
+    longTouchDelay: 350
   };
 </script>
 
@@ -123,6 +126,9 @@ These map directly to `Particles.setParams()` and shader uniforms (see `src/lib/
 | `uSize` | `number` | `1.5` | Particle size multiplier |
 | `uEdge` | `number` | `0.06` | Soft edge width for the particle sprite |
 | `uSharpness` | `number` | `6.0` | Edge hardness exponent (higher = sharper) |
+| `touchBurstForce` | `number` | `5` | Tap/click burst strength |
+| `longTouchBurstForce` | `number` | `10` | Long-press burst strength |
+| `longTouchDelay` | `number` | `350` | Long-press delay in ms |
 
 ## ✅ Test Locally
 Install dependencies and run the dev server:

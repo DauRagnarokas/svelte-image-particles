@@ -21,7 +21,7 @@
     height="100vh"
     persist={true}
     {params}
-			mobileParams={{ pixelStep: 2, maxParticles: 10000, pixelRatio: 1.5 }}
+			mobileParams={{ pixelStep: 2, maxParticles: 10000, pixelRatio: 1.5, touchBurstForce: 5 }}
     {paused}
   />
   <nav class="nav">
