@@ -214,6 +214,7 @@
     if (!isBrowser() || !webgl || !containerEl) return;
     let attempts = 0;
     const tryResize = () => {
+      if (!containerEl) return;
       const w = containerEl.clientWidth;
       const h = containerEl.clientHeight;
       if (w > 0 && h > 0) {
